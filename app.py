@@ -1,5 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
+import json
 
 # Configure API key
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
@@ -10,22 +11,24 @@ st.title("AI Resume Match Engine")
 
 st.write("Analyze job fit and prepare for interviews.")
 
-# ✅ Shared Inputs (IMPORTANT)
+# Shared Inputs
 job_text = st.text_area("Job Description")
 resume_text = st.text_area("Your Resume")
+
 st.divider()
 
-# ✅ Tabs
+# Tabs
 tab1, tab2 = st.tabs(["Resume Match", "Interview Prep"])
 
+
 # -----------------------------
-# ✅ TAB 1: Resume Match
+# TAB 1: Resume Match
 # -----------------------------
 with tab1:
 
     st.subheader("Resume Match Analysis")
-    if st.button("Analyze Resume Match", key="match"):
 
+    if st.button("Analyze Resume Match", key="match"):
 
         if not job_text.strip() or not resume_text.strip():
             st.warning("Please fill in both fields.")
@@ -51,37 +54,36 @@ Format EXACTLY like this:
   "fit_score": 0,
   "missing_skills": ["skill1", "skill2"]
 }}
-                    """
+"""
 
                     response = model.generate_content(prompt)
 
-                # st.markdown(response.text)
-              import json
+                # ✅ Parse JSON correctly
+                data = json.loads(response.text)
 
-data = json.loads(response.text)
+                st.markdown("### Summary")
+                st.write(data.get("summary", ""))
 
-st.markdown("### Summary")
-st.write(data.get("summary", ""))
+                st.markdown("### Fit Score")
+                st.success(f"{data.get('fit_score', '')}%")
 
-st.markdown("### Fit Score")
-st.success(f"{data.get('fit_score', '')}%")
-
-st.markdown("### Missing Skills")
-for skill in data.get("missing_skills", []):
-    st.write(f"- {skill}")
+                st.markdown("### Missing Skills")
+                for skill in data.get("missing_skills", []):
+                    st.write(f"- {skill}")
 
             except Exception as e:
                 st.error("Error during analysis")
                 st.text(str(e))
 
+
 # -----------------------------
-# ✅ TAB 2: Interview Prep
+# TAB 2: Interview Prep
 # -----------------------------
 with tab2:
 
     st.subheader("Interview Preparation")
-    if st.button("Generate Interview Prep", key="prep"):
 
+    if st.button("Generate Interview Prep", key="prep"):
 
         if not job_text.strip() or not resume_text.strip():
             st.warning("Please fill in both fields.")
@@ -111,7 +113,7 @@ Provide 2–3 bullet points.
 
 ### Suggestions
 Provide 2–3 actionable suggestions as bullet points.
-                    """
+"""
 
                     response = model.generate_content(prompt)
 
