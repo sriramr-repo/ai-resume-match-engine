@@ -1,5 +1,9 @@
 # AI Resume Match Engine
 
+## Demo
+
+![App Screenshot](screenshot.png)
+
 This is an AI-powered application that evaluates how well a resume matches a job description.
 
 ---
