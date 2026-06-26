@@ -8,7 +8,6 @@ model = genai.GenerativeModel("gemini-2.5-flash")
 
 # Title
 st.title("AI Resume Match Engine")
-
 st.write("Analyze job fit and prepare for interviews.")
 
 # Shared Inputs
@@ -19,7 +18,6 @@ st.divider()
 
 # Tabs
 tab1, tab2 = st.tabs(["Resume Match", "Interview Prep"])
-
 
 # -----------------------------
 # TAB 1: Resume Match
@@ -37,7 +35,7 @@ with tab1:
                 with st.spinner("Analyzing Resume Match..."):
 
                     prompt = f"""
-You are a hiring manager evaluating a candidate.
+You are a experienced hiring manager evaluating a candidate.
 
 JOB DESCRIPTION:
 {job_text}
@@ -58,9 +56,17 @@ Format EXACTLY like this:
 
                     response = model.generate_content(prompt)
 
-                # ✅ Parse JSON correctly
-                data = json.loads(response.text)
+                # ✅ Robust JSON parsing
+                clean_text = response.text.strip()
 
+                # Handle ```json blocks if present
+                if clean_text.startswith("```"):
+                    clean_text = clean_text.split("```")[1]
+                    clean_text = clean_text.replace("json", "").strip()
+
+                data = json.loads(clean_text)
+
+                # ✅ Structured UI
                 st.markdown("### Summary")
                 st.write(data.get("summary", ""))
 
@@ -92,7 +98,7 @@ with tab2:
                 with st.spinner("Generating Interview Prep..."):
 
                     prompt = f"""
-You are an experienced interview coach and mentor to high quality candidates.
+You are an experienced interview coach.
 
 JOB DESCRIPTION:
 {job_text}
