@@ -1,24 +1,19 @@
 from fastapi import FastAPI
 import google.generativeai as genai
-
-app = FastAPI()   # ✅ app must be defined BEFORE endpoints
-
-import os
 from dotenv import load_dotenv
+import os
+import json
 
 load_dotenv()
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
+app = FastAPI()
+
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 model = genai.GenerativeModel("gemini-2.5-flash")
 
 @app.get("/")
 def home():
-    return {"message": "AI server is running ✅"}
-
-@app.get("/test-ai")
-def test_ai():
-    response = model.generate_content("Say hello like a friendly assistant")
-    return {"response": response.text}
+    return {"message": "backend is working ✅"}
 
 @app.post("/analyze-job")
 def analyze_job(job_text: str):
@@ -27,38 +22,30 @@ def analyze_job(job_text: str):
         resume_text = f.read()
 
     prompt = f"""
-You are an AI career evaluator.
+    Return ONLY valid JSON.
 
-Score the candidate based on:
+    {{
+      "summary": "...",
+      "skills_required": [],
+      "skills_present_in_resume": [],
+      "skills_missing": [],
+      "fit_score": 0-100,
+      "fit_reasoning": "...",
+      "improvement_suggestions": []
+    }}
 
-- Each required skill = +25 points
-- Missing skills reduce score proportionally
+    JOB:
+    {job_text}
 
-Return ONLY valid JSON:
-
-{{
-  "summary": "...",
-  "skills_required": [],
-  "skills_present_in_resume": [],
-  "skills_missing": [],
-  "fit_score": integer (0-100),
-  "fit_reasoning": "Brief explanation of score",
-  "improvement_suggestions": []
-}}
-
-JOB:
-{job_text}
-
-RESUME:
-{resume_text}
-"""
+    RESUME:
+    {resume_text}
+    """
 
     response = model.generate_content(prompt)
 
     raw_text = response.text.strip()
     cleaned = raw_text.replace("```json", "").replace("```", "").strip()
 
-    import json
     try:
         parsed = json.loads(cleaned)
         return parsed
