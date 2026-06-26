@@ -13,6 +13,7 @@ st.write("Analyze job fit and prepare for interviews.")
 # ✅ Shared Inputs (IMPORTANT)
 job_text = st.text_area("Job Description")
 resume_text = st.text_area("Your Resume")
+st.divider()
 
 # ✅ Tabs
 tab1, tab2 = st.tabs(["Resume Match", "Interview Prep"])
@@ -23,8 +24,8 @@ tab1, tab2 = st.tabs(["Resume Match", "Interview Prep"])
 with tab1:
 
     st.subheader("Resume Match Analysis")
+    if st.button("Analyze Resume Match", key="match"):
 
-    if st.button("Analyze Resume Match"):
 
         if not job_text.strip() or not resume_text.strip():
             st.warning("Please fill in both fields.")
@@ -33,23 +34,46 @@ with tab1:
                 with st.spinner("Analyzing Resume Match..."):
 
                     prompt = f"""
-                    Analyze the match between this job and resume.
+You are a hiring manager evaluating a candidate.
 
-                    JOB:
-                    {job_text}
+JOB DESCRIPTION:
+{job_text}
 
-                    RESUME:
-                    {resume_text}
+RESUME:
+{resume_text}
 
-                    Output:
-                    - Summary (short)
-                    - Fit score (0-100)
-                    - Missing skills (bullet points)
+Return ONLY valid JSON. No explanation.
+
+Format EXACTLY like this:
+
+{{
+  "summary": "2-3 line summary",
+  "fit_score": 0,
+  "missing_skills": ["skill1", "skill2"]
+}}
                     """
 
                     response = model.generate_content(prompt)
 
-                st.write(response.text)
+                # st.markdown(response.text)
+                import json
+
+try:
+    data = json.loads(response.text)
+
+    st.markdown("### Summary")
+    st.write(data.get("summary", ""))
+
+    st.markdown("### Fit Score")
+    st.success(f"{data.get('fit_score', '')}%")
+
+    st.markdown("### Missing Skills")
+    for skill in data.get("missing_skills", []):
+        st.write(f"- {skill}")
+
+except:
+    st.error("Failed to parse AI response")
+    st.write(response.text)
 
             except Exception as e:
                 st.error("Error during analysis")
@@ -61,8 +85,8 @@ with tab1:
 with tab2:
 
     st.subheader("Interview Preparation")
+    if st.button("Generate Interview Prep", key="prep"):
 
-    if st.button("Generate Interview Prep"):
 
         if not job_text.strip() or not resume_text.strip():
             st.warning("Please fill in both fields.")
@@ -71,24 +95,32 @@ with tab2:
                 with st.spinner("Generating Interview Prep..."):
 
                     prompt = f"""
-                    You are an interview coach.
+You are an experienced interview coach and mentor to high quality candidates.
 
-                    JOB:
-                    {job_text}
+JOB DESCRIPTION:
+{job_text}
 
-                    RESUME:
-                    {resume_text}
+RESUME:
+{resume_text}
 
-                    Output:
-                    1. 5 Interview Questions
-                    2. Sample Answers tailored to resume
-                    3. Weak Areas
-                    4. Suggestions to improve
+Return output in VALID markdown format.
+
+### Interview Questions
+Provide 5 questions.
+
+### Sample Answers
+Provide 2–3 strong answers tailored to resume.
+
+### Weak Areas
+Provide 2–3 bullet points.
+
+### Suggestions
+Provide 2–3 actionable suggestions as bullet points.
                     """
 
                     response = model.generate_content(prompt)
 
-                st.write(response.text)
+                st.markdown(response.text)
 
             except Exception as e:
                 st.error("Error generating interview prep")
