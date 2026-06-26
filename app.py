@@ -56,24 +56,19 @@ Format EXACTLY like this:
                     response = model.generate_content(prompt)
 
                 # st.markdown(response.text)
-                import json
+              import json
 
-try:
-    data = json.loads(response.text)
+data = json.loads(response.text)
 
-    st.markdown("### Summary")
-    st.write(data.get("summary", ""))
+st.markdown("### Summary")
+st.write(data.get("summary", ""))
 
-    st.markdown("### Fit Score")
-    st.success(f"{data.get('fit_score', '')}%")
+st.markdown("### Fit Score")
+st.success(f"{data.get('fit_score', '')}%")
 
-    st.markdown("### Missing Skills")
-    for skill in data.get("missing_skills", []):
-        st.write(f"- {skill}")
-
-except:
-    st.error("Failed to parse AI response")
-    st.write(response.text)
+st.markdown("### Missing Skills")
+for skill in data.get("missing_skills", []):
+    st.write(f"- {skill}")
 
             except Exception as e:
                 st.error("Error during analysis")
