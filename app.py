@@ -35,7 +35,7 @@ with tab1:
                 with st.spinner("Analyzing Resume Match..."):
 
                     prompt = f"""
-You are a experienced hiring manager evaluating a candidate.
+You are a hiring manager evaluating a candidate.
 
 JOB DESCRIPTION:
 {job_text}
@@ -59,14 +59,12 @@ Format EXACTLY like this:
                 # ✅ Robust JSON parsing
                 clean_text = response.text.strip()
 
-                # Handle ```json blocks if present
                 if clean_text.startswith("```"):
                     clean_text = clean_text.split("```")[1]
                     clean_text = clean_text.replace("json", "").strip()
 
                 data = json.loads(clean_text)
 
-                # ✅ Structured UI
                 st.markdown("### Summary")
                 st.write(data.get("summary", ""))
 
@@ -80,7 +78,6 @@ Format EXACTLY like this:
             except Exception as e:
                 st.error("Error during analysis")
                 st.text(str(e))
-
 
 # -----------------------------
 # TAB 2: Interview Prep
@@ -106,24 +103,44 @@ JOB DESCRIPTION:
 RESUME:
 {resume_text}
 
-Return output in VALID markdown format.
+Return ONLY valid JSON. No explanation.
 
-### Interview Questions
-Provide 5 questions.
+Format EXACTLY like this:
 
-### Sample Answers
-Provide 2–3 strong answers tailored to resume.
-
-### Weak Areas
-Provide 2–3 bullet points.
-
-### Suggestions
-Provide 2–3 actionable suggestions as bullet points.
+{{
+  "questions": ["question1", "question2", "question3", "question4", "question5"],
+  "answers": ["answer1", "answer2"],
+  "weak_areas": ["weakness1", "weakness2"],
+  "suggestions": ["suggestion1", "suggestion2"]
+}}
 """
 
                     response = model.generate_content(prompt)
 
-                st.markdown(response.text)
+                # ✅ Robust JSON parsing
+                clean_text = response.text.strip()
+
+                if clean_text.startswith("```"):
+                    clean_text = clean_text.split("```")[1]
+                    clean_text = clean_text.replace("json", "").strip()
+
+                data = json.loads(clean_text)
+
+                st.markdown("### Interview Questions")
+                for i, q in enumerate(data.get("questions", []), 1):
+                    st.write(f"{i}. {q}")
+
+                st.markdown("### Sample Answers")
+                for a in data.get("answers", []):
+                    st.write(f"- {a}")
+
+                st.markdown("### Weak Areas")
+                for w in data.get("weak_areas", []):
+                    st.write(f"- {w}")
+
+                st.markdown("### Suggestions")
+                for s in data.get("suggestions", []):
+                    st.write(f"- {s}")
 
             except Exception as e:
                 st.error("Error generating interview prep")
