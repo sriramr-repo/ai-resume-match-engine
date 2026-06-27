@@ -32,7 +32,6 @@ st.markdown("---")
 # -------------------------
 tab1, tab2 = st.tabs(["Resume Match", "Interview Prep"])
 
-
 # =========================
 # TAB 1: RESUME MATCH
 # =========================
@@ -79,14 +78,16 @@ Format EXACTLY like this:
 
                 data = json.loads(clean_text)
 
-                # -------------------------
-                # DISPLAY OUTPUT
-                # -------------------------
-                st.markdown("### Summary")
-                st.write(data.get("summary", ""))
+                # ✅ Card-style layout
+                col1, col2 = st.columns(2)
 
-                st.markdown("### Fit Score")
-                st.success(f"{data.get('fit_score', '')}%")
+                with col1:
+                    st.markdown("### Summary")
+                    st.info(data.get("summary", ""))
+
+                with col2:
+                    st.markdown("### Fit Score")
+                    st.metric(label="Score", value=f"{data.get('fit_score', '')}%")
 
                 st.markdown("### Missing Skills")
                 for skill in data.get("missing_skills", []):
@@ -144,16 +145,14 @@ Format EXACTLY like this:
 
                 data = json.loads(clean_text)
 
-                # -------------------------
-                # DISPLAY OUTPUT
-                # -------------------------
+                # ✅ Structured UI
                 st.markdown("### Interview Questions")
                 for i, q in enumerate(data.get("questions", []), 1):
                     st.write(f"{i}. {q}")
 
                 st.markdown("### Sample Answers")
                 for a in data.get("answers", []):
-                    st.write(f"- {a}")
+                    st.info(a)
 
                 st.markdown("### Weak Areas")
                 for w in data.get("weak_areas", []):
