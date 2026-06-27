@@ -6,22 +6,36 @@ import json
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 model = genai.GenerativeModel("gemini-2.5-flash")
 
-# Title
-st.title("AI Resume Match Engine")
-st.write("Analyze job fit and prepare for interviews.")
+# -------------------------
+# HEADER
+# -------------------------
+st.title("AI Career Copilot")
 
-# Shared Inputs
-job_text = st.text_area("Job Description")
-resume_text = st.text_area("Your Resume")
+st.markdown(
+    "Analyze how well your resume matches a job and prepare for interviews with AI-powered insights."
+)
 
-st.divider()
+st.markdown("---")
 
-# Tabs
+# -------------------------
+# INPUT SECTION
+# -------------------------
+st.subheader("Input")
+
+job_text = st.text_area("Job Description", height=200)
+resume_text = st.text_area("Your Resume", height=200)
+
+st.markdown("---")
+
+# -------------------------
+# TABS
+# -------------------------
 tab1, tab2 = st.tabs(["Resume Match", "Interview Prep"])
 
-# -----------------------------
-# TAB 1: Resume Match
-# -----------------------------
+
+# =========================
+# TAB 1: RESUME MATCH
+# =========================
 with tab1:
 
     st.subheader("Resume Match Analysis")
@@ -32,7 +46,7 @@ with tab1:
             st.warning("Please fill in both fields.")
         else:
             try:
-                with st.spinner("Analyzing Resume Match..."):
+                with st.spinner("Analyzing match..."):
 
                     prompt = f"""
 You are a hiring manager evaluating a candidate.
@@ -56,7 +70,7 @@ Format EXACTLY like this:
 
                     response = model.generate_content(prompt)
 
-                # ✅ Robust JSON parsing
+                # ✅ Robust parsing
                 clean_text = response.text.strip()
 
                 if clean_text.startswith("```"):
@@ -65,6 +79,9 @@ Format EXACTLY like this:
 
                 data = json.loads(clean_text)
 
+                # -------------------------
+                # DISPLAY OUTPUT
+                # -------------------------
                 st.markdown("### Summary")
                 st.write(data.get("summary", ""))
 
@@ -79,9 +96,10 @@ Format EXACTLY like this:
                 st.error("Error during analysis")
                 st.text(str(e))
 
-# -----------------------------
-# TAB 2: Interview Prep
-# -----------------------------
+
+# =========================
+# TAB 2: INTERVIEW PREP
+# =========================
 with tab2:
 
     st.subheader("Interview Preparation")
@@ -92,7 +110,7 @@ with tab2:
             st.warning("Please fill in both fields.")
         else:
             try:
-                with st.spinner("Generating Interview Prep..."):
+                with st.spinner("Generating interview prep..."):
 
                     prompt = f"""
 You are an experienced interview coach.
@@ -117,7 +135,7 @@ Format EXACTLY like this:
 
                     response = model.generate_content(prompt)
 
-                # ✅ Robust JSON parsing
+                # ✅ Robust parsing
                 clean_text = response.text.strip()
 
                 if clean_text.startswith("```"):
@@ -126,6 +144,9 @@ Format EXACTLY like this:
 
                 data = json.loads(clean_text)
 
+                # -------------------------
+                # DISPLAY OUTPUT
+                # -------------------------
                 st.markdown("### Interview Questions")
                 for i, q in enumerate(data.get("questions", []), 1):
                     st.write(f"{i}. {q}")
